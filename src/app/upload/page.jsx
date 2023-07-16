@@ -33,7 +33,7 @@ function FileUpload() {
 
       console.log(response.data.data.uuid);
       setUploadStatus(
-        `File URL: http://localhost:3000/download?file_id=${response.data.data.uuid}`
+        `File URL: https://test-discord-storage.vercel.app/download?file_id=${response.data.data.uuid}`
       );
     } catch (error) {
       console.error("Error uploading file: ", error);
@@ -78,7 +78,7 @@ function FileUpload() {
             ...prevUploadedChunks,
             chunkDownloadUrl,
           ]);
-          setUploadStatus(`Uploading ${i + 1}/${totalChunks}`);
+          setUploadStatus(`Uploading part ${i + 1} of ${totalChunks}`);
           uploadedChunkFileUrls.push(chunkDownloadUrl);
         }
         setUploadStatus("File uploaded successfully.");

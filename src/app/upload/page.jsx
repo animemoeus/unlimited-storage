@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 
 function FileUpload() {
@@ -7,15 +7,19 @@ function FileUpload() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedChunks, setUploadedChunks] = useState([]);
   const [mergedFileUrl, setMergedFileUrl] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
   };
 
   const saveChunkedFileData = async (fileName, fileUrls) => {
+    setUploadStatus("Getting the file url...");
+    setIsLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:8000/chunked-file/",
+        "https://discord-storage.animemoe.us/chunked-file/",
         JSON.stringify({
           file_name: fileName,
           file_urls: fileUrls.join(","),
@@ -27,14 +31,19 @@ function FileUpload() {
         }
       );
 
-      console.log("File uploaded successfully.");
+      console.log(response.data.data.uuid);
+      setUploadStatus(
+        `File URL: http://localhost:3000/download?file_id=${response.data.data.uuid}`
+      );
     } catch (error) {
       console.error("Error uploading file: ", error);
     }
+    setIsLoading(false);
   };
 
   const handleChunkFileUpload = async () => {
-    console.log("start");
+    setUploadStatus("Starting upload...");
+    setIsLoading(true);
     const uploadedChunkFileUrls = [];
 
     if (selectedFile) {
@@ -69,16 +78,17 @@ function FileUpload() {
             ...prevUploadedChunks,
             chunkDownloadUrl,
           ]);
-          console.log(`Uploading ${i + 1}/${totalChunks}`);
+          setUploadStatus(`Uploading ${i + 1}/${totalChunks}`);
           uploadedChunkFileUrls.push(chunkDownloadUrl);
         }
-        console.log("File uploaded successfully.");
+        setUploadStatus("File uploaded successfully.");
       } catch (error) {
+        setUploadStatus("Error uploading file :(");
         console.error("Error uploading file: ", error);
-        // Handle the error
       }
     }
     saveChunkedFileData(selectedFile.name, uploadedChunkFileUrls);
+    setIsLoading(false);
     console.log("finish");
   };
 
@@ -120,8 +130,33 @@ function FileUpload() {
   };
 
   return (
-    <div>
-      <input type="file" onChange={handleFileChange} />
+    <div className="container-md border rounded shadow min-vh-100">
+      <div className="container-fluid mt-5">
+        <div className="card">
+          <div className="card-header text-center">Unlimited File Storage</div>
+          <div className="card-body">
+            <div className="input-group">
+              <input
+                type="file"
+                className="form-control"
+                onChange={handleFileChange}
+              />
+              <button
+                className="btn btn-outline-secondary"
+                type="button"
+                onClick={handleChunkFileUpload}
+                disabled={isLoading || !selectedFile}
+              >
+                {isLoading ? <span>Uploading...</span> : <span>Upload</span>}
+              </button>
+            </div>
+            <br />
+            <p className="card-text text-center">{uploadStatus}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* <input type="file" onChange={handleFileChange} />
       <button onClick={handleChunkFileUpload}>Upload</button>
       <button
         onClick={handleMergeChunks}
@@ -132,7 +167,7 @@ function FileUpload() {
       <button onClick={handleDownloadMergedFile} disabled={!mergedFileUrl}>
         Download Merged File
       </button>
-      <button onClick={() => {}}>arter</button>
+      <button onClick={() => {}}>arter</button> */}
     </div>
   );
 }

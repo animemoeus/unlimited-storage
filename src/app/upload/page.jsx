@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 
 function FileUpload() {
-  let CHUNK_SIZE = 20; // MB
+  let CHUNK_SIZE = 10; // MB
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadedChunks, setUploadedChunks] = useState([]);
   const [mergedFileUrl, setMergedFileUrl] = useState(null);

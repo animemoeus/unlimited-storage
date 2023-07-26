@@ -1,6 +1,8 @@
 "use client";
-import axios from "axios";
+
 import { useRef, useState } from "react";
+
+import axios from "axios";
 
 import { calculatePercentage } from "../utils";
 
@@ -24,7 +26,7 @@ function Home() {
   const toast = useToast();
   const fileInputRef = useRef(null);
 
-  const handleClick = () => {
+  const handleChooseFile = () => {
     fileInputRef.current.click();
   };
 
@@ -36,14 +38,15 @@ function Home() {
     setSelectedFile(event.target.files[0]);
   };
 
-  const saveChunkedFileData = async (fileName, fileUrls) => {
+  const saveChunkedFileData = async (selectedFile, fileUrls) => {
     setUploadStatus("Getting the file url...");
 
     try {
       const response = await axios.post(
         "https://discord-storage.animemoe.us/chunked-file/",
         JSON.stringify({
-          file_name: fileName,
+          file_name: selectedFile.name,
+          file_size: selectedFile.size,
           file_urls: fileUrls.join(","),
         }),
         {
@@ -86,7 +89,7 @@ function Home() {
     if (selectedFile) {
       setIsLoading(true);
 
-      const chunkSize = CHUNK_SIZE * 1024 * 1024; // 2MB chunk size
+      const chunkSize = CHUNK_SIZE * 1024 * 1024;
       const totalChunks = Math.ceil(selectedFile.size / chunkSize);
       const uploadedChunkFileUrls = [];
 
@@ -124,7 +127,7 @@ function Home() {
           );
         }
 
-        saveChunkedFileData(selectedFile.name, uploadedChunkFileUrls);
+        saveChunkedFileData(selectedFile, uploadedChunkFileUrls);
         setUploadStatus("File uploaded successfully.");
         setIsLoading(false);
       } catch (error) {
@@ -205,6 +208,7 @@ function Home() {
             base: "lg",
             md: "xl",
           }}
+          textAlign={"center"}
           color="gray.500"
           lineHeight="base"
         >
@@ -239,7 +243,7 @@ function Home() {
               placeholder="Choose file..."
               value={selectedFile ? selectedFile.name : ""}
               isReadOnly={true}
-              onClick={handleClick}
+              onClick={handleChooseFile}
               focusBorderColor={"inherit"}
               isDisabled={isLoading}
             />
